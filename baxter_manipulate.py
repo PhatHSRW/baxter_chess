@@ -110,7 +110,7 @@ left.move_to_neutral()
 left_manipulation = IK_Arm("left")
 
 # angles = {'left_w0': 0.026844663757324222, 'left_w1': 1.6785584752258302, 'left_w2': -0.03834951965332031, 'left_e0': 0.031446606115722656, 'left_e1': 0.48627190920410157, 'left_s0': -0.826815643725586, 'left_s1': -0.9134855581420899}
-angles = left_manipulation.ik_request(0.78,0.25,0.25,0,0.98,0,0)
+angles = left_manipulation.ik_request(0.695,0.455,0.328,0,1,0,0)
 left.move_to_joint_positions(angles)
 
 x,y,z, qx,qy,qz,qw = left_manipulation.current_pose()
