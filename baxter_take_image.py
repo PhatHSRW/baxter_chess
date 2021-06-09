@@ -75,7 +75,7 @@ def callback(data):
         cv2.imwrite("/home/hsrw-robotics/PhatHuynh/ws_baxter/src/baxter_thesis/src/board_frame/current_frame.jpg", current_frame)
 
 
-rospy.init_node('Video_Sub_BaxterLeft')
+rospy.init_node('Baxter_Image')
 
 rs = baxter_interface.RobotEnable(CHECK_VERSION)
 rs.enable()

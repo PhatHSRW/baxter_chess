@@ -168,7 +168,7 @@ class board_Recognition:
 		# image = cv2.GaussianBlur(image,(7,7),0)
 		# image = cv2.bilateralFilter(image,5,50,50)
 		edges = cv2.Canny(image, 50, 100, None,3)
-		if not debug:
+		if debug:
 			#Show image with edges drawn
 			cv2.imshow("Canny", edges)
 			cv2.waitKey(1)
@@ -211,7 +211,7 @@ class board_Recognition:
 				else:
 					vertical.append(newLine)
 
-		if not debug:
+		if debug:
 			# Show image with lines drawn
 			cv2.imshow("Lines",output)
 			cv2.waitKey(1)
@@ -245,7 +245,7 @@ class board_Recognition:
 			cv2.circle(colorEdges, (d[0],d[1]), 4, (0,0,255),2)
 
 
-		if not debug:
+		if debug:
 			#Show image with corners circled
 			cv2.imshow("Corners",colorEdges)
 			cv2.waitKey(1)
@@ -290,7 +290,7 @@ class board_Recognition:
 				newSquare.classify(colorEdges)
 				self.Squares.append(newSquare)
 
-		if not debug:
+		if debug:
 			#Show image with squares and ROI drawn and position labelled
 			cv2.imshow("Squares", colorEdges)
 			cv2.waitKey(1)
@@ -329,7 +329,7 @@ class board_Recognition:
 				square.state = True
 				occupancy_Squares.append(square)
 
-		print([[sq.position, sq.state] for sq in occupancy_Squares])
+		print([sq.position for sq in occupancy_Squares])
 
 		if debug:
 			cv2.imshow('erosion', erosion)
@@ -351,7 +351,7 @@ class board_Recognition:
 			origin_point[1] = origin_point[1]+20
 			cv2.circle(self.image, (origin_point[0], origin_point[1]), 2, (0,0,255), 2)
 
-		if not debug:
+		if debug:
 			cv2.circle(self.image,((480, 288)),2,(0,255,0),2)
 			cv2.imshow('Piece Detection', self.image)
 			cv2.waitKey(1)
