@@ -105,8 +105,7 @@ left.move_to_neutral()
 
 left_manipulation = IK_Arm("left")
 
-# angles = {'left_w0': 0.026844663757324222, 'left_w1': 1.6785584752258302, 'left_w2': -0.03834951965332031, 'left_e0': 0.031446606115722656, 'left_e1': 0.48627190920410157, 'left_s0': -0.826815643725586, 'left_s1': -0.9134855581420899}
-angles = left_manipulation.ik_request(0.6533,0.5067,0.25,0,1,0,0)
+angles = left_manipulation.ik_request(0.7073,0.5333,0.25,0,1,0,0)
 left.move_to_joint_positions(angles)
 
 x,y,z, qx,qy,qz,qw = left_manipulation.current_pose()
@@ -136,8 +135,9 @@ while True:
         break
 
 joints = left_manipulation.ik_request(0.7066,0.5265,0.4237, 0,0.9913,0,0.1317)
+angles = {'left_w0': 0.048546672600166166, 'left_w1': 1.505723257084189, 'left_w2': 0.36137482103163315, 'left_e0': -0.17278111723906756, 'left_e1': 1.055158112709171, 'left_s0': -0.27480749824493955, 'left_s1': -1.0664980586411266}
 
-left.move_to_joint_positions(joints)
+left.move_to_joint_positions(angles)
 x,y,z, qx,qy,qz,qw = left_manipulation.current_pose()
 z1 = z
 print 'deltaZ = ', z1-z2
@@ -147,9 +147,9 @@ print(depth)
 x,y,z, qx,qy,qz,qw = left_manipulation.current_pose()
 print x,y,z
 
-e_angle = tf.transformations.euler_from_quaternion([0,0.9913,0,0.1317], axes='rxyz')
+e_angle = tf.transformations.euler_from_quaternion([0,0.99895,0,0.04573], axes='rxyz')
 print(e_angle)
 d2 = (z1-z2 + d_min)/math.cos(e_angle[1])
-print(d2)
+print('depth ', d2)
 
 # rospy.spin()

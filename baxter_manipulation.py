@@ -22,11 +22,9 @@ class IK_move:
         self.iksrv_client = rospy.ServiceProxy(ns, SolvePositionIK)
         rospy.wait_for_service(ns, 5.0)
 
-        print("Getting robot state... ")
-        self._rs = baxter_interface.RobotEnable(CHECK_VERSION)
-        self._init_state = self._rs.state().enabled
-        print("Enabling robot... ")
-        self._rs.enable()
+        # self._rs = baxter_interface.RobotEnable(CHECK_VERSION)
+        # self._init_state = self._rs.state().enabled
+        # self._rs.enable()
 
     def ik_test(self,x,y,z, qx,qy,qz,qw):
         iksrv_request = SolvePositionIKRequest()

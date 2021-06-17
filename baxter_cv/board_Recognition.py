@@ -37,7 +37,6 @@ class board_Recognition:
 		# Find corners
 		self.corners = self.findCorners(horizontal, vertical, colorEdges)
 		print(len(self.corners))
-		# print(corners)
 
 		# Find squares
 		squares = self.findSquares(self.corners, colorEdges)
@@ -45,9 +44,9 @@ class board_Recognition:
 		# Find Occupancy squares
 		occupancy_squares = self.occupancySquares(perspective_output, edges, squares)
 
-		piece_position = self.findPiece(mask, occupancy_squares, trans_matrix)
+		origin_positions = self.findPiece(mask, squares, trans_matrix)
 
-		return piece_position
+		return self.corners, occupancy_squares, origin_positions
 
 
 	def clean_Image(self,image):
@@ -108,7 +107,7 @@ class board_Recognition:
 		if debug:
 			# Show image with contours drawn
 			cv2.imshow("Chess Board",self.image)
-			cv2.waitKey(1)
+			cv2.waitKey(0)
 
 		# Epsilon parameter needed to fit contour to polygon
 		epsilon = 0.1 * Lperimeter
@@ -143,14 +142,14 @@ class board_Recognition:
 
 		# print(Matrix)
 		transform = cv2.warpPerspective(image,Matrix,(500,500))
-		output = transform[20:transform.shape[0]-20, 20:transform.shape[1]-20]
+		output = transform[20:transform.shape[1]-20, 20:transform.shape[0]-20]
 		histogram = cv2.equalizeHist(cv2.cvtColor(output,cv2.COLOR_BGR2GRAY))
 
 		if debug:
 			# Show image with mask drawn
 			cv2.imshow("transform",output)
 			cv2.imshow("histogram",histogram)
-			cv2.waitKey(1)
+			cv2.waitKey(0)
 			
 		return output, Matrix
 
@@ -171,7 +170,7 @@ class board_Recognition:
 		if debug:
 			#Show image with edges drawn
 			cv2.imshow("Canny", edges)
-			cv2.waitKey(1)
+			cv2.waitKey(0)
 			
 
 		# Convert edges image to grayscale
@@ -248,7 +247,7 @@ class board_Recognition:
 		if debug:
 			#Show image with corners circled
 			cv2.imshow("Corners",colorEdges)
-			cv2.waitKey(1)
+			cv2.waitKey()
 
 		return dedupeCorners
 
@@ -267,7 +266,7 @@ class board_Recognition:
 
 			rows[r].append(corners[c])
 
-		letters = ['a','b','c','d','e','f','g','h']
+		letters = ['A','B','C','D','E','F','G','H']
 		numbers = ['1','2','3','4','5','6','7','8']
 		self.Squares = []
 		
@@ -339,22 +338,23 @@ class board_Recognition:
 
 		return occupancy_Squares
 
-	def findPiece(self, image, occupancy_squares, trans_matrix):
+	def findPiece(self, image, squares, trans_matrix):
 
 		inv_maxtrix = np.linalg.inv(trans_matrix)
-		origin_points = []
-		for square in occupancy_squares:
+		origin_points = {}
+		for square in squares:
 			perspective_point = np.array([[[square.roi[0],square.roi[1]]]],dtype=np.float32)
 			origin_point = cv2.perspectiveTransform(perspective_point, inv_maxtrix)
 			origin_point = origin_point.flatten()
 			origin_point[0] = origin_point[0]+20
 			origin_point[1] = origin_point[1]+20
+			origin_points[square.position] = origin_point
 			cv2.circle(self.image, (origin_point[0], origin_point[1]), 2, (0,0,255), 2)
 
-		if debug:
+		if not debug:
 			cv2.circle(self.image,((480, 288)),2,(0,255,0),2)
 			cv2.imshow('Piece Detection', self.image)
-			cv2.waitKey(1)
+			cv2.waitKey(0)
 
-		return tuple(origin_point)
+		return origin_points
 		
