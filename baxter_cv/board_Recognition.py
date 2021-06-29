@@ -37,7 +37,10 @@ class board_Recognition:
 		# Find corners
 		self.corners = self.findCorners(horizontal, vertical, colorEdges)
 		print(len(self.corners))
+<<<<<<< HEAD
 		# print(corners)
+=======
+>>>>>>> lab
 
 		# Find squares
 		squares = self.findSquares(self.corners, colorEdges)
@@ -45,9 +48,15 @@ class board_Recognition:
 		# Find Occupancy squares
 		occupancy_squares = self.occupancySquares(perspective_output, edges, squares)
 
+<<<<<<< HEAD
 		self.findPiece(mask, occupancy_squares, trans_matrix)
 
 		return squares
+=======
+		origin_positions = self.findPiece(mask, squares, trans_matrix)
+
+		return self.corners, occupancy_squares, origin_positions
+>>>>>>> lab
 
 
 	def clean_Image(self,image):
@@ -63,7 +72,11 @@ class board_Recognition:
 		# Setting all pixels above the threshold value to white and those below to black
 		# Adaptive thresholding is used to combat differences of illumination in the picture
 		adaptiveThresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 55, 2)
+<<<<<<< HEAD
 		if not debug:
+=======
+		if debug:
+>>>>>>> lab
 			# Show thresholded image
 			cv2.imshow("Adaptive Thresholding", adaptiveThresh)
 			cv2.waitKey(1)
@@ -105,10 +118,17 @@ class board_Recognition:
 
 		# Draw contours
 		cv2.drawContours(self.image, [largest], -1, (0,0,255), 2)
+<<<<<<< HEAD
 		if not debug:
 			# Show image with contours drawn
 			cv2.imshow("Chess Board",self.image)
 			cv2.waitKey(1)
+=======
+		if debug:
+			# Show image with contours drawn
+			cv2.imshow("Chess Board",self.image)
+			cv2.waitKey(0)
+>>>>>>> lab
 
 		# Epsilon parameter needed to fit contour to polygon
 		epsilon = 0.1 * Lperimeter
@@ -125,7 +145,11 @@ class board_Recognition:
 		extracted = np.zeros_like(img)
 		extracted[mask == 255] = img[mask == 255]
 
+<<<<<<< HEAD
 		if not debug:
+=======
+		if debug:
+>>>>>>> lab
 			# Show image with mask drawn
 			cv2.imshow("mask",extracted)
 			cv2.waitKey(1)
@@ -143,6 +167,7 @@ class board_Recognition:
 
 		# print(Matrix)
 		transform = cv2.warpPerspective(image,Matrix,(500,500))
+<<<<<<< HEAD
 		output = transform[20:transform.shape[0]-20, 20:transform.shape[1]-20]
 		histogram = cv2.equalizeHist(cv2.cvtColor(output,cv2.COLOR_BGR2GRAY))
 
@@ -151,6 +176,16 @@ class board_Recognition:
 			cv2.imshow("transform",output)
 			cv2.imshow("histogram",histogram)
 			cv2.waitKey(1)
+=======
+		output = transform[20:transform.shape[1]-20, 20:transform.shape[0]-20]
+		histogram = cv2.equalizeHist(cv2.cvtColor(output,cv2.COLOR_BGR2GRAY))
+
+		if debug:
+			# Show image with mask drawn
+			cv2.imshow("transform",output)
+			cv2.imshow("histogram",histogram)
+			cv2.waitKey(0)
+>>>>>>> lab
 			
 		return output, Matrix
 
@@ -167,11 +202,19 @@ class board_Recognition:
 		# image = cv2.medianBlur(image,5)
 		# image = cv2.GaussianBlur(image,(7,7),0)
 		# image = cv2.bilateralFilter(image,5,50,50)
+<<<<<<< HEAD
 		edges = cv2.Canny(image, 60, 100, None,3)
 		if not debug:
 			#Show image with edges drawn
 			cv2.imshow("Canny", edges)
 			cv2.waitKey(1)
+=======
+		edges = cv2.Canny(image, 50, 100, None,3)
+		if debug:
+			#Show image with edges drawn
+			cv2.imshow("Canny", edges)
+			cv2.waitKey(0)
+>>>>>>> lab
 			
 
 		# Convert edges image to grayscale
@@ -185,8 +228,13 @@ class board_Recognition:
 		'''
 		
 		# Infer lines based on edges (HoughLinesP)
+<<<<<<< HEAD
 		lines = cv2.HoughLinesP(edges, 1,  np.pi / 180, 40, np.array([]), 50, 100)		# 50, 50, 60
 		print(lines.shape)
+=======
+		lines = cv2.HoughLinesP(edges, 1,  np.pi / 180, 50, np.array([]), 70, 100)		# 50, 50, 60
+		# print(lines.shape)
+>>>>>>> lab
 
 		horizontal = []
 		vertical = []
@@ -211,7 +259,11 @@ class board_Recognition:
 				else:
 					vertical.append(newLine)
 
+<<<<<<< HEAD
 		if not debug:
+=======
+		if debug:
+>>>>>>> lab
 			# Show image with lines drawn
 			cv2.imshow("Lines",output)
 			cv2.waitKey(1)
@@ -235,7 +287,11 @@ class board_Recognition:
 		for c in corners:
 			matchingFlag = False
 			for d in dedupeCorners:
+<<<<<<< HEAD
 				if math.sqrt((d[0]-c[0])*(d[0]-c[0]) + (d[1]-c[1])*(d[1]-c[1])) < 30:
+=======
+				if math.sqrt((d[0]-c[0])*(d[0]-c[0]) + (d[1]-c[1])*(d[1]-c[1])) < 45:
+>>>>>>> lab
 					matchingFlag = True
 					break
 			if not matchingFlag:
@@ -245,10 +301,17 @@ class board_Recognition:
 			cv2.circle(colorEdges, (d[0],d[1]), 4, (0,0,255),2)
 
 
+<<<<<<< HEAD
 		if not debug:
 			#Show image with corners circled
 			cv2.imshow("Corners",colorEdges)
 			cv2.waitKey(1)
+=======
+		if debug:
+			#Show image with corners circled
+			cv2.imshow("Corners",colorEdges)
+			cv2.waitKey()
+>>>>>>> lab
 
 		return dedupeCorners
 
@@ -267,9 +330,15 @@ class board_Recognition:
 
 			rows[r].append(corners[c])
 
+<<<<<<< HEAD
 		letters = ['a','b','c','d','e','f','g','h']
 		numbers = ['1','2','3','4','5','6','7','8']
 		Squares = []
+=======
+		letters = ['A','B','C','D','E','F','G','H']
+		numbers = ['1','2','3','4','5','6','7','8']
+		self.Squares = []
+>>>>>>> lab
 		
 		# sort corners by column
 		for r in rows:
@@ -288,14 +357,24 @@ class board_Recognition:
 				newSquare.draw(colorEdges,(0,0,255),1)
 				newSquare.drawROI(colorEdges,(0,0,255),2)
 				newSquare.classify(colorEdges)
+<<<<<<< HEAD
 				Squares.append(newSquare)
 
 		if not debug:
+=======
+				self.Squares.append(newSquare)
+
+		if debug:
+>>>>>>> lab
 			#Show image with squares and ROI drawn and position labelled
 			cv2.imshow("Squares", colorEdges)
 			cv2.waitKey(1)
 
+<<<<<<< HEAD
 		return Squares
+=======
+		return self.Squares
+>>>>>>> lab
 
 	def occupancySquares(self, image, edge, Squares):
 		
@@ -320,17 +399,30 @@ class board_Recognition:
 		for square in Squares:
 			black = 0
 			white = 0
+<<<<<<< HEAD
 			for dx in range(-15,15):
+=======
+			for dx in range(-17,18):
+>>>>>>> lab
 				for dy in range(-12,18):
 					if erosion[square.roi[1]+dy, square.roi[0]+dx] == 0:
 						black +=1
 					else: white +=1
+<<<<<<< HEAD
 			if black > 0.7*900:
+=======
+			if black > 0.6*1050:
+				square.state = True
+>>>>>>> lab
 				occupancy_Squares.append(square)
 
 		print([sq.position for sq in occupancy_Squares])
 
+<<<<<<< HEAD
 		if not debug:
+=======
+		if debug:
+>>>>>>> lab
 			cv2.imshow('erosion', erosion)
 			cv2.imshow('nonuniform illumination', out_gray)
 			# cv2.imshow('erosion2', erosion2)
@@ -338,6 +430,7 @@ class board_Recognition:
 
 		return occupancy_Squares
 
+<<<<<<< HEAD
 	def findPiece(self, image, occupancy_squares, trans_matrix):
 
 		inv_maxtrix = np.linalg.pinv(trans_matrix)
@@ -353,4 +446,25 @@ class board_Recognition:
 		if not debug:
 			cv2.imshow('Piece Detection', self.image)
 			cv2.waitKey(1)
+=======
+	def findPiece(self, image, squares, trans_matrix):
+
+		inv_maxtrix = np.linalg.inv(trans_matrix)
+		origin_points = {}
+		for square in squares:
+			perspective_point = np.array([[[square.roi[0],square.roi[1]]]],dtype=np.float32)
+			origin_point = cv2.perspectiveTransform(perspective_point, inv_maxtrix)
+			origin_point = origin_point.flatten()
+			origin_point[0] = origin_point[0]+20
+			origin_point[1] = origin_point[1]+20
+			origin_points[square.position] = origin_point
+			cv2.circle(self.image, (origin_point[0], origin_point[1]), 2, (0,0,255), 2)
+
+		if not debug:
+			cv2.circle(self.image,((480, 288)),2,(0,255,0),2)
+			cv2.imshow('Piece Detection', self.image)
+			cv2.waitKey(0)
+
+		return origin_points
+>>>>>>> lab
 		

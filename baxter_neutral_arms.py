@@ -11,5 +11,9 @@ rs.enable()
 left = baxter_interface.Limb('left')
 right = baxter_interface.Limb('right')
 left.move_to_neutral()
+<<<<<<< HEAD
 right.move_to_neutral()
+=======
+# right.move_to_neutral()
+>>>>>>> lab
 

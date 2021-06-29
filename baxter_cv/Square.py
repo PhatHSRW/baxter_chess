@@ -4,7 +4,11 @@ import math
 
 class SquareClass:
 
+<<<<<<< HEAD
 	def __init__(self, image, c1, c2, c3, c4, position, state=''):
+=======
+	def __init__(self, image, c1, c2, c3, c4, position, state=False):
+>>>>>>> lab
 
 		# Corners
 		self.c1 = c1
