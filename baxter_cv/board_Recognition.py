@@ -62,7 +62,7 @@ class board_Recognition:
 		# Setting all pixels above the threshold value to white and those below to black
 		# Adaptive thresholding is used to combat differences of illumination in the picture
 		adaptiveThresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 55, 2)
-		if debug:
+		if  debug:
 			# Show thresholded image
 			cv2.imshow("Adaptive Thresholding", adaptiveThresh)
 			cv2.waitKey(1)
@@ -104,7 +104,7 @@ class board_Recognition:
 
 		# Draw contours
 		cv2.drawContours(self.image, [largest], -1, (0,0,255), 2)
-		if debug:
+		if  debug:
 			# Show image with contours drawn
 			cv2.imshow("Chess Board",self.image)
 			cv2.waitKey(0)
@@ -124,7 +124,7 @@ class board_Recognition:
 		extracted = np.zeros_like(img)
 		extracted[mask == 255] = img[mask == 255]
 
-		if debug:
+		if  debug:
 			# Show image with mask drawn
 			cv2.imshow("mask",extracted)
 			cv2.waitKey(1)
@@ -145,7 +145,7 @@ class board_Recognition:
 		output = transform[20:transform.shape[1]-20, 20:transform.shape[0]-20]
 		histogram = cv2.equalizeHist(cv2.cvtColor(output,cv2.COLOR_BGR2GRAY))
 
-		if debug:
+		if  debug:
 			# Show image with mask drawn
 			cv2.imshow("transform",output)
 			cv2.imshow("histogram",histogram)
@@ -210,7 +210,7 @@ class board_Recognition:
 				else:
 					vertical.append(newLine)
 
-		if debug:
+		if  debug:
 			# Show image with lines drawn
 			cv2.imshow("Lines",output)
 			cv2.waitKey(1)
@@ -301,13 +301,13 @@ class board_Recognition:
 		'''Before binarization, it is necessary to correct the nonuniform illumination of the background.'''
 		image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 		se=cv2.getStructuringElement(cv2.MORPH_RECT , (3,3))
-		bg=cv2.morphologyEx(image, cv2.MORPH_DILATE, se, iterations=5)
+		bg=cv2.morphologyEx(image, cv2.MORPH_DILATE, se, iterations=4)
 		out_gray=cv2.divide(image, bg, scale=255)
 		out_binary=cv2.threshold(out_gray, 0, 255, cv2.THRESH_OTSU )[1]
 
 		kernel5 = np.ones((5,5),np.uint8)
 		kernel3 = np.ones((3,3),np.uint8)
-		erosion = cv2.erode(out_binary,kernel5, iterations = 2)
+		erosion = cv2.erode(out_binary,kernel5, iterations = 4)
 
 		# square = Squares[0]
 		# roi = square.roi
@@ -319,22 +319,32 @@ class board_Recognition:
 		for square in Squares:
 			black = 0
 			white = 0
-			for dx in range(-17,18):
-				for dy in range(-12,18):
-					if erosion[square.roi[1]+dy, square.roi[0]+dx] == 0:
-						black +=1
-					else: white +=1
-			if black > 0.6*1050:
-				square.state = True
-				occupancy_Squares.append(square)
+			if square.position in ['A1', 'A2', 'A3']:
+				for dx in range(-20,10):
+					for dy in range(-10,20):
+						if erosion[square.roi[1]+dy, square.roi[0]+dx] == 0:
+							black +=1
+						else: white +=1
+				if black > 0.4*900:
+					square.state = True
+					occupancy_Squares.append(square)
+			else:
+				for dx in range(-17,18):
+					for dy in range(-12,18):
+						if erosion[square.roi[1]+dy, square.roi[0]+dx] == 0:
+							black +=1
+						else: white +=1
+				if black > 0.6*1050:
+					square.state = True
+					occupancy_Squares.append(square)
 
-		print([sq.position for sq in occupancy_Squares])
+		print 'pieces on those squares: ', [sq.position for sq in occupancy_Squares]
 
 		if debug:
 			cv2.imshow('erosion', erosion)
 			cv2.imshow('nonuniform illumination', out_gray)
 			# cv2.imshow('erosion2', erosion2)
-			cv2.waitKey(1)
+			cv2.waitKey(0)
 
 		return occupancy_Squares
 
@@ -351,7 +361,7 @@ class board_Recognition:
 			origin_points[square.position] = origin_point
 			cv2.circle(self.image, (origin_point[0], origin_point[1]), 2, (0,0,255), 2)
 
-		if not debug:
+		if  debug:
 			cv2.circle(self.image,((480, 288)),2,(0,255,0),2)
 			cv2.imshow('Piece Detection', self.image)
 			cv2.waitKey(0)

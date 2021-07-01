@@ -134,9 +134,8 @@ while True:
         z2 = z
         break
 
-joints = left_manipulation.ik_request(0.7066,0.5265,0.4237, 0,0.9913,0,0.1317)
-angles = {'left_w0': 0.048546672600166166, 'left_w1': 1.505723257084189, 'left_w2': 0.36137482103163315, 'left_e0': -0.17278111723906756, 'left_e1': 1.055158112709171, 'left_s0': -0.27480749824493955, 'left_s1': -1.0664980586411266}
-
+# angles = {'left_w0': 0.048546672600166166, 'left_w1': 1.505723257084189, 'left_w2': 0.36137482103163315, 'left_e0': -0.17278111723906756, 'left_e1': 1.055158112709171, 'left_s0': -0.27480749824493955, 'left_s1': -1.0664980586411266}
+angles = {'left_w0': 0.08206797205810547, 'left_w1': 1.7142235285034182, 'left_w2': 0.2795679982727051, 'left_e0': -0.1714223528503418, 'left_e1': 0.5733253188171387, 'left_s0': -0.3482136384521485, 'left_s1': -0.7957525328063966}
 left.move_to_joint_positions(angles)
 x,y,z, qx,qy,qz,qw = left_manipulation.current_pose()
 z1 = z
@@ -153,3 +152,6 @@ d2 = (z1-z2 + d_min)/math.cos(e_angle[1])
 print('depth ', d2)
 
 # rospy.spin()
+
+
+# z_board = -0.187        z_coordinate of board respect to baxter
