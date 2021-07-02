@@ -21,7 +21,7 @@ class board_Recognition:
 
 	def initialize_Board(self):
 
-		# Threshold the photo to binary
+		# Threshold the image to binary
 		adaptiveThresh,img = self.thresh_Image(self.image)
 
 		# Separate chess board from raw image
@@ -53,16 +53,16 @@ class board_Recognition:
 
 	def thresh_Image(self,image):
 		'''
-		Resizes and converts the photo to black and white for simpler analysis
+		Resizes and converts the image to black and white for simpler analysis
 		'''
 		# resize image
 		img = imutils.resize(image)
 		
-		# Convert to grayscale
 		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 		# pixels above the threshold value are white and those below are black
 		adaptiveThresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 55, 2)
+
 		if  not check:
 			cv2.imshow("Adaptive Thresholding", adaptiveThresh)
 			cv2.waitKey(1)
@@ -71,7 +71,8 @@ class board_Recognition:
 
 	def initialize_mask(self, adaptiveThresh,img):
 		'''
-		Finds border of chessboard and blacks out all unneeded pixels
+		Detect border of chessboard and put all unnecessary pixel (environment outside chessboard) into zero, 
+		meaning black color.
 		'''
 
 		# Find contours which are closed polygons
@@ -112,7 +113,7 @@ class board_Recognition:
 		# Approximates a polygon from chessboard edge
 		chessboardEdge = cv2.approxPolyDP(largest, epsilon, True)
 		chessboardEdge = np.squeeze(chessboardEdge)
-		print(chessboardEdge)
+		print "4 corners: ", chessboardEdge
 
 		# Create new all black image
 		mask = np.zeros((img.shape[0], img.shape[1]), 'uint8')
@@ -123,7 +124,6 @@ class board_Recognition:
 		extracted[mask == 255] = img[mask == 255]
 
 		if not check:
-			# Show image with mask drawn
 			cv2.imshow("mask",extracted)
 			cv2.waitKey(1)
 			
@@ -144,7 +144,6 @@ class board_Recognition:
 		histogram = cv2.equalizeHist(cv2.cvtColor(output,cv2.COLOR_BGR2GRAY))
 
 		if  not check:
-			# Show image with mask drawn
 			cv2.imshow("transform",output)
 			cv2.imshow("histogram",histogram)
 			cv2.waitKey(0)
@@ -154,33 +153,29 @@ class board_Recognition:
 
 	def findEdges(self, image):
 		'''
-		Finds edges in the image. Edges later used to find lines and so on
+		Finds edges in the image in order to find lines
 		'''
-	
 		# Find edges
 		image = cv2.boxFilter(image,0,(5,5), normalize = True)
 		image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-		
 		# image = cv2.medianBlur(image,5)
 		# image = cv2.GaussianBlur(image,(7,7),0)
 		# image = cv2.bilateralFilter(image,5,50,50)
 		edges = cv2.Canny(image, 50, 100, None,3)
+
 		if not check:
-			#Show image with edges drawn
 			cv2.imshow("Canny", edges)
 			cv2.waitKey(0)
 			
-
-		# Convert edges image to grayscale
+		# Convert edges image to BGR
 		colorEdges = cv2.cvtColor(edges,cv2.COLOR_GRAY2BGR)
 
 		return edges,colorEdges
 
 	def findLines (self, edges, output):
 		'''
-		Finds the lines in the photo and sorts into vertical and horizontal
+		Finds the lines in the image and classify into vertical or horizontal list
 		'''
-		
 		# Infer lines based on edges (HoughLinesP)
 		lines = cv2.HoughLinesP(edges, 1,  np.pi / 180, 50, np.array([]), 70, 100)		# 50, 50, 60
 		# print(lines.shape)
@@ -209,7 +204,6 @@ class board_Recognition:
 					vertical.append(newLine)
 
 		if  not check:
-			# Show image with lines drawn
 			cv2.imshow("Lines",output)
 			cv2.waitKey(1)
 			
@@ -217,9 +211,8 @@ class board_Recognition:
 
 	def findCorners (self, horizontal, vertical, colorEdges):
 		'''
-		Finds corners at intersection of horizontal and vertical lines.
+		Finds corners by searching intersections of horizontal and vertical lines.
 		'''
-
 		# Find corners (intersections of lines)
 		corners = []
 		for v in vertical:
@@ -228,22 +221,20 @@ class board_Recognition:
 				corners.append([s1,s2])
 
 		# remove duplicate corners
-		dedupeCorners = []
+		finalCorners = []
 		for c in corners:
 			matchingFlag = False
-			for d in dedupeCorners:
+			for d in finalCorners:
 				if math.sqrt((d[0]-c[0])*(d[0]-c[0]) + (d[1]-c[1])*(d[1]-c[1])) < 45:
 					matchingFlag = True
 					break
 			if not matchingFlag:
-				dedupeCorners.append(c)
+				finalCorners.append(c)
 
-		for d in dedupeCorners:
+		for d in finalCorners:
 			cv2.circle(colorEdges, (d[0],d[1]), 4, (0,0,255),2)
 
-
 		if not check:
-			#Show image with corners circled
 			cv2.imshow("Corners",colorEdges)
 			cv2.waitKey()
 
@@ -295,8 +286,8 @@ class board_Recognition:
 		return self.Squares
 
 	def occupancySquares(self, image, edge, Squares):
-		
-		'''Before binarization, it is necessary to correct the nonuniform illumination of the background.'''
+		'''Checking which squares having pieces on it'''
+		# Before binarization, it is necessary to correct the nonuniform illumination of the background.
 		image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 		se=cv2.getStructuringElement(cv2.MORPH_RECT , (3,3))
 		bg=cv2.morphologyEx(image, cv2.MORPH_DILATE, se, iterations=4)
