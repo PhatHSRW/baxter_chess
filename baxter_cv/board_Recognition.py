@@ -5,14 +5,13 @@ import imutils
 from Line import LineClass
 from Square import SquareClass
 
-not check =  True
-
+check =  True
 
 class board_Recognition:
 	'''
 	This class handles the initialization of the board by finding chess board, lines and squares, etc.
 	Work perfect for resolution 960x600
-	rosrun baxter_tools camera_control.py -o left_hand_camera -r 1280x800
+	rosrun baxter_tools camera_control.py -o left_hand_camera -r 960x600
 	'''
 
 	def __init__(self, image):
@@ -46,6 +45,7 @@ class board_Recognition:
 		# Find Occupancy squares
 		occupancy_squares = self.occupancySquares(perspective_output, edges, squares)
 
+		# Find all square in pixel uv coordinate
 		origin_positions = self.square_on_image(mask, squares, trans_matrix)
 
 		return self.corners, occupancy_squares, origin_positions
@@ -104,7 +104,6 @@ class board_Recognition:
 		# Draw contours
 		cv2.drawContours(self.image, [largest], -1, (0,0,255), 2)
 		if  not check:
-			# Show image with contours drawn
 			cv2.imshow("Chess Board",self.image)
 			cv2.waitKey(0)
 
