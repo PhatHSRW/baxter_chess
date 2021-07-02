@@ -5,13 +5,14 @@ import imutils
 from Line import LineClass
 from Square import SquareClass
 
-debug =  False
+not check =  True
 
 
 class board_Recognition:
-	'''rosrun baxter_tools camera_control.py -o left_hand_camera -r 1280x800
-	This class handles the initialization of the board. It analyzes
-	the empty board finding its border, lines, corners, squares...
+	'''
+	This class handles the initialization of the board by finding chess board, lines and squares, etc.
+	Work perfect for resolution 960x600
+	rosrun baxter_tools camera_control.py -o left_hand_camera -r 1280x800
 	'''
 
 	def __init__(self, image):
@@ -20,12 +21,13 @@ class board_Recognition:
 
 	def initialize_Board(self):
 
-		# Binarize the photo
-		adaptiveThresh,img = self.clean_Image(self.image)
+		# Threshold the photo to binary
+		adaptiveThresh,img = self.thresh_Image(self.image)
 
-		# Black out all pixels outside the border of the chessboard
+		# Separate chess board from raw image
 		mask, points = self.initialize_mask(adaptiveThresh,img)
 
+		# Perspective transform the chess board
 		perspective_output, trans_matrix = self.perspective(mask, points)
 
 		# Find edges
@@ -44,12 +46,12 @@ class board_Recognition:
 		# Find Occupancy squares
 		occupancy_squares = self.occupancySquares(perspective_output, edges, squares)
 
-		origin_positions = self.findPiece(mask, squares, trans_matrix)
+		origin_positions = self.square_on_image(mask, squares, trans_matrix)
 
 		return self.corners, occupancy_squares, origin_positions
 
 
-	def clean_Image(self,image):
+	def thresh_Image(self,image):
 		'''
 		Resizes and converts the photo to black and white for simpler analysis
 		'''
@@ -59,11 +61,9 @@ class board_Recognition:
 		# Convert to grayscale
 		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-		# Setting all pixels above the threshold value to white and those below to black
-		# Adaptive thresholding is used to combat differences of illumination in the picture
+		# pixels above the threshold value are white and those below are black
 		adaptiveThresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 55, 2)
-		if  debug:
-			# Show thresholded image
+		if  not check:
 			cv2.imshow("Adaptive Thresholding", adaptiveThresh)
 			cv2.waitKey(1)
 
@@ -74,7 +74,7 @@ class board_Recognition:
 		Finds border of chessboard and blacks out all unneeded pixels
 		'''
 
-		# Find contours (closed polygons)
+		# Find contours which are closed polygons
 		if cv2.__version__[0]=="3":
 			_, contours, hierarchy = cv2.findContours(adaptiveThresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 		else: contours, hierarchy = cv2.findContours(adaptiveThresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -87,9 +87,7 @@ class board_Recognition:
 			area = cv2.contourArea(contours[c])
 			# Perimenter
 			perimeter = cv2.arcLength(contours[c], True)
-				# Filtering the chessboard edge / Error handling as some contours are so small so as to give zero division
-				#For test values are 70-40, for Board values are 80 - 75 - will need to recalibrate if change
-				#the largest square is always the largest ratio
+			#the largest square is always the largest ratio -> chess board
 			if c ==0:
 				Lratio = 0
 			if perimeter > 0:
@@ -104,7 +102,7 @@ class board_Recognition:
 
 		# Draw contours
 		cv2.drawContours(self.image, [largest], -1, (0,0,255), 2)
-		if  debug:
+		if  not check:
 			# Show image with contours drawn
 			cv2.imshow("Chess Board",self.image)
 			cv2.waitKey(0)
@@ -124,7 +122,7 @@ class board_Recognition:
 		extracted = np.zeros_like(img)
 		extracted[mask == 255] = img[mask == 255]
 
-		if  debug:
+		if not check:
 			# Show image with mask drawn
 			cv2.imshow("mask",extracted)
 			cv2.waitKey(1)
@@ -145,7 +143,7 @@ class board_Recognition:
 		output = transform[20:transform.shape[1]-20, 20:transform.shape[0]-20]
 		histogram = cv2.equalizeHist(cv2.cvtColor(output,cv2.COLOR_BGR2GRAY))
 
-		if  debug:
+		if  not check:
 			# Show image with mask drawn
 			cv2.imshow("transform",output)
 			cv2.imshow("histogram",histogram)
@@ -167,7 +165,7 @@ class board_Recognition:
 		# image = cv2.GaussianBlur(image,(7,7),0)
 		# image = cv2.bilateralFilter(image,5,50,50)
 		edges = cv2.Canny(image, 50, 100, None,3)
-		if debug:
+		if not check:
 			#Show image with edges drawn
 			cv2.imshow("Canny", edges)
 			cv2.waitKey(0)
@@ -210,7 +208,7 @@ class board_Recognition:
 				else:
 					vertical.append(newLine)
 
-		if  debug:
+		if  not check:
 			# Show image with lines drawn
 			cv2.imshow("Lines",output)
 			cv2.waitKey(1)
@@ -244,7 +242,7 @@ class board_Recognition:
 			cv2.circle(colorEdges, (d[0],d[1]), 4, (0,0,255),2)
 
 
-		if debug:
+		if not check:
 			#Show image with corners circled
 			cv2.imshow("Corners",colorEdges)
 			cv2.waitKey()
@@ -289,7 +287,7 @@ class board_Recognition:
 				newSquare.classify(colorEdges)
 				self.Squares.append(newSquare)
 
-		if debug:
+		if not check:
 			#Show image with squares and ROI drawn and position labelled
 			cv2.imshow("Squares", colorEdges)
 			cv2.waitKey(1)
@@ -340,7 +338,7 @@ class board_Recognition:
 
 		print 'pieces on those squares: ', [sq.position for sq in occupancy_Squares]
 
-		if debug:
+		if not check:
 			cv2.imshow('erosion', erosion)
 			cv2.imshow('nonuniform illumination', out_gray)
 			# cv2.imshow('erosion2', erosion2)
@@ -348,7 +346,7 @@ class board_Recognition:
 
 		return occupancy_Squares
 
-	def findPiece(self, image, squares, trans_matrix):
+	def square_on_image(self, image, squares, trans_matrix):
 
 		inv_maxtrix = np.linalg.inv(trans_matrix)
 		origin_points = {}
@@ -361,7 +359,7 @@ class board_Recognition:
 			origin_points[square.position] = origin_point
 			cv2.circle(self.image, (origin_point[0], origin_point[1]), 2, (0,0,255), 2)
 
-		if  debug:
+		if  not check:
 			cv2.circle(self.image,((480, 288)),2,(0,255,0),2)
 			cv2.imshow('Piece Detection', self.image)
 			cv2.waitKey(0)
