@@ -94,8 +94,8 @@ else:
     print('(x,y,z) = ',(xe,ye,ze))
 
     # z_chessboard = -0.188, z_cam = 0.403 => h = 0.591
-    # anpha =  0.860914 0.0893687 0.0862841
-    depth = 0.591     # 0.60855
+    # anpha =  0.0860914 0.0893687 0.0862841
+    depth = 0.610    # 0.591     # 0.60855
 
     real_xs = (xs/zs)*depth
     real_ys = (ys/zs)*depth

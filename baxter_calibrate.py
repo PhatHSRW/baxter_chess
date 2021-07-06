@@ -129,24 +129,21 @@ while True:
         sensor = rospy.wait_for_message("/robot/range/left_hand_range/state", Range)
         d_min = sensor.range
         print 'd_min ', d_min
-        x,y,z, qx,qy,qz,qw = left_manipulation.current_pose()
-        print x,y,z
-        z2 = z
+        x2,y2,z2, qx2,qy2,qz2,qw2 = left_manipulation.current_pose()
+        print 'z2 = ', z2
+        print(qx2,qy2,qz2,qw2)
         break
 
 # angles = {'left_w0': 0.048546672600166166, 'left_w1': 1.505723257084189, 'left_w2': 0.36137482103163315, 'left_e0': -0.17278111723906756, 'left_e1': 1.055158112709171, 'left_s0': -0.27480749824493955, 'left_s1': -1.0664980586411266}
-angles = {'left_w0': 0.08206797205810547, 'left_w1': 1.7142235285034182, 'left_w2': 0.2795679982727051, 'left_e0': -0.1714223528503418, 'left_e1': 0.5733253188171387, 'left_s0': -0.3482136384521485, 'left_s1': -0.7957525328063966}
+angles = {'left_w0': 0.07439806812744142, 'left_w1': 1.7038691581970216, 'left_w2': 0.2803349886657715, 'left_e0': -0.15224759302368165, 'left_e1': 0.5809952227478028, 'left_s0': -0.3984515091979981, 'left_s1': -0.7861651528930664}
 left.move_to_joint_positions(angles)
-x,y,z, qx,qy,qz,qw = left_manipulation.current_pose()
-z1 = z
+x1,y1,z1, qx1,qy1,qz1,qw1 = left_manipulation.current_pose()
+print 'z1 = ', z1
+print(qx1,qy1,qz1,qw1)
 print 'deltaZ = ', z1-z2
-sensor = rospy.wait_for_message("/robot/range/left_hand_range/state", Range)
-depth = sensor.range
-print(depth)
-x,y,z, qx,qy,qz,qw = left_manipulation.current_pose()
-print x,y,z
 
-e_angle = tf.transformations.euler_from_quaternion([0,0.99895,0,0.04573], axes='rxyz')
+
+e_angle = tf.transformations.euler_from_quaternion([qx1+qx2,qy1+qy2,qz1+qz2,qw1+qw2], axes='rxyz')
 print(e_angle)
 d2 = (z1-z2 + d_min)/math.cos(e_angle[1])
 print('depth ', d2)

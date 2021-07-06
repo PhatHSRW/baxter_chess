@@ -237,7 +237,7 @@ class board_Recognition:
 			cv2.imshow("Corners",colorEdges)
 			cv2.waitKey()
 
-		return dedupeCorners
+		return finalCorners
 
 	def findSquares(self, corners, colorEdges):
 		'''
