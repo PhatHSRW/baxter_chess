@@ -62,7 +62,7 @@ class IK_move:
             print("IK Joint Solution:\n{0}".format(limb_joints))
             print("------------------")
         else:
-            rospy.logerr("INVALID POSE - No Valid Joint Solution Found.")
+            # rospy.logerr("INVALID POSE - No Valid Joint Solution Found.")
             return False
         return limb_joints
 

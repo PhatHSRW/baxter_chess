@@ -27,8 +27,8 @@ def callback(data):
     current_frame = br.imgmsg_to_cv2(data)
 
     cv2.imwrite("/home/hsrw-robotics/PhatHuynh/ws_baxter/src/baxter_thesis/src/board_frame/current_frame.jpg", current_frame)
-    cv2.circle(current_frame,(477,286),10,(0,0,255),2)
-    cv2.circle(current_frame,(480,288),10,(0,255,0),2)
+    # cv2.circle(current_frame,(477,286),10,(0,0,255),2)
+    # cv2.circle(current_frame,(480,288),10,(0,255,0),2)
 
     cv2.imshow("camera", current_frame)
     cv2.waitKey(1)

@@ -20,7 +20,7 @@ from pixel_to_Baxter3D import CameraModel
 
 def quaternion(square):
     qx, qy, qz, qw = 0,0.98,0,0.14
-    if square in ['G1', 'H1', 'F1']:
+    if square[1] == '1':
         qx = 0.0191420169913
         qy = 0.998437294909
         qz = 0.0110917468564
@@ -33,13 +33,34 @@ def quaternion(square):
     return qx, qy, qz, qw
 
 def offset(square):
-    offset_x = -0.005
+    offset_x = 0.005
     offset_y = 0
     if square in ['A8']:
         offset_x = -0.0075
     if square[1] == '1':
-        offset_x = 0.0075
+        offset_x = 0.008
     return offset_x, offset_y
+
+def xy_calculation(origin_position, start, end):
+    us,vs = cam_model.rectifyPoint(origin_position[start])
+    xs,ys,zs = cam_model.projectPixelTo3dRay((us,vs))
+    print('(x,y,z) = ',(xs,ys,zs))
+
+    ue,ve = cam_model.rectifyPoint(origin_position[end])
+    xe,ye,ze = cam_model.projectPixelTo3dRay((ue,ve))
+    print('(x,y,z) = ',(xe,ye,ze))
+
+    # z_chessboard = -0.188, z_cam = 0.403 => h = 0.591
+    # anpha =  0.0860914 0.0893687 0.0862841
+    depth = 0.591     # 0.60855
+
+    real_xs = (xs/zs)*depth
+    real_ys = (ys/zs)*depth
+    real_xe = (xe/ze)*depth
+    real_ye = (ye/ze)*depth
+
+    return real_xs, real_ys, real_xe, real_ye
+
 
 rospy.init_node('Baxter_move')
 
@@ -56,11 +77,11 @@ rospy.sleep(1.0)
 arm_move = IK_move('left')
 
 # Camera model
-cam_model = PinholeCameraModel()
-cam_info = rospy.wait_for_message("/cameras/left_hand_camera/camera_info", CameraInfo)
-cam_model.fromCameraInfo(cam_info)
+# cam_model = PinholeCameraModel()
+# cam_info = rospy.wait_for_message("/cameras/left_hand_camera/camera_info", CameraInfo)
+# cam_model.fromCameraInfo(cam_info)
 
-# cam_model = CameraModel()
+cam_model = CameraModel()
 
 
 # Board recognition
@@ -77,31 +98,167 @@ start = sys.argv[1]
 end = sys.argv[2]
 print(start, end)
 
+state = rospy.wait_for_message("/robot/limb/left/endpoint_state", EndpointState)
+start_x = state.pose.position.x
+start_y = state.pose.position.y
+start_z = state.pose.position.z
+real_xs, real_ys, real_xe, real_ye = xy_calculation(origin_position, start, end)
+
 if start not in piece_on:
     print('Wrong starting point. Check again')
+
+elif end in piece_on:
+    '--------------------Pick step--------------------'
+    # offset and adjust
+    offset_x, offset_y = offset(end)
+    qx,qy,qz,qw = quaternion(end)
+
+    # X Y Z is baxter coordinate
+    X = start_x-real_ye+offset_x
+    Y = start_y-real_xe+offset_y
+    Z = start_z
+
+    joints = arm_move.ik_test(X, Y, Z-0.3, 0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.3, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    joints = arm_move.ik_test(X, Y, Z-0.405, 0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.41, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    joints = arm_move.ik_test(X,Y,Z-0.49,0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X,Y,Z-0.492, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    rospy.sleep(1.0)
+    gripper.close()
+    rospy.sleep(1.0)
+  
+    joints = arm_move.ik_test(X, Y, Z-0.3,0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.3, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+    
+    if start in ['H1', 'G1', 'F1']:
+        joints = arm_move.ik_test(X+0.05, Y+0.05, Z-0.3, 0,0.98,0,0.17)
+        left.move_to_joint_positions(joints)
+
+    '--------------------Remove step--------------------'
+    joints = arm_move.ik_test(0.693,-0.107,0.057, 0.2832,0.958,-0.005,-0.009)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    gripper.open()
+    rospy.sleep(1.0)
+
+    '--------------------Pick step--------------------'
+    # offset and adjust
+    offset_x, offset_y = offset(start)
+    qx,qy,qz,qw = quaternion(start)
+
+    # X Y Z is baxter coordinate
+    X = start_x-real_ys+offset_x
+    Y = start_y-real_xs+offset_y
+    Z = start_z
+
+    joints = arm_move.ik_test(X, Y, Z-0.3, 0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.3, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    joints = arm_move.ik_test(X, Y, Z-0.405, 0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.41, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    joints = arm_move.ik_test(X,Y,Z-0.49,0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X,Y,Z-0.492, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    rospy.sleep(2.0)
+    gripper.close()
+    rospy.sleep(1.0)
+  
+
+    joints = arm_move.ik_test(X, Y, Z-0.3,0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.3, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+    
+    if start in ['H1', 'G1', 'F1']:
+        joints = arm_move.ik_test(X+0.05, Y+0.05, Z-0.3, 0,0.98,0,0.17)
+        left.move_to_joint_positions(joints)
+
+
+    '--------------------Place step--------------------'
+
+    # offset and adjust
+    offset_x, offset_y = offset(end)
+    qx,qy,qz,qw = quaternion(end)
+
+    # X Y Z is baxter coordinate
+    X = start_x-real_ye+offset_x
+    Y = start_y-real_xe+offset_y
+    Z = start_z
+
+    joints = arm_move.ik_test(X, Y, Z-0.3, 0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.3, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    joints = arm_move.ik_test(X, Y, Z-0.405, 0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.41, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    joints = arm_move.ik_test(X, Y, Z-0.485, 0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X-0.005, Y, Z-0.49, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    rospy.sleep(2.0)
+    gripper.open()
+    rospy.sleep(1.0)
+
+
+    joints = arm_move.ik_test(X, Y, Z-0.4, 0,0.98,0,0.17)
+    if joints is not False:
+        left.move_to_joint_positions(joints)
+    else: 
+        joints = arm_move.ik_test(X, Y, Z-0.4, qx, qy, qz, qw)
+        left.move_to_joint_positions(joints)
+
+    if end in ['H1', 'G1', 'F1']:
+        joints = arm_move.ik_test(X+0.05, Y+0.05, Z-0.28, 0,0.98,0,0.17)
+        left.move_to_joint_positions(joints)
+
+
 else:
-    state = rospy.wait_for_message("/robot/limb/left/endpoint_state", EndpointState)
-    start_x = state.pose.position.x
-    start_y = state.pose.position.y
-    start_z = state.pose.position.z
-
-    us,vs = cam_model.rectifyPoint(origin_position[start])
-    xs,ys,zs = cam_model.projectPixelTo3dRay((us,vs))
-    print('(x,y,z) = ',(xs,ys,zs))
-
-    ue,ve = cam_model.rectifyPoint(origin_position[end])
-    xe,ye,ze = cam_model.projectPixelTo3dRay((ue,ve))
-    print('(x,y,z) = ',(xe,ye,ze))
-
-    # z_chessboard = -0.188, z_cam = 0.403 => h = 0.591
-    # anpha =  0.0860914 0.0893687 0.0862841
-    depth = 0.610    # 0.591     # 0.60855
-
-    real_xs = (xs/zs)*depth
-    real_ys = (ys/zs)*depth
-    real_xe = (xe/ze)*depth
-    real_ye = (ye/ze)*depth
-
     '--------------------Pick step--------------------'
     # offset and adjust
     offset_x, offset_y = offset(start)

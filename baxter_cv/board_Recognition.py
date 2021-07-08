@@ -63,7 +63,7 @@ class board_Recognition:
 		# pixels above the threshold value are white and those below are black
 		adaptiveThresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 55, 2)
 
-		if  not check:
+		if not check:
 			cv2.imshow("Adaptive Thresholding", adaptiveThresh)
 			cv2.waitKey(1)
 
@@ -103,7 +103,7 @@ class board_Recognition:
 
 		# Draw contours
 		cv2.drawContours(self.image, [largest], -1, (0,0,255), 2)
-		if  not check:
+		if check:
 			cv2.imshow("Chess Board",self.image)
 			cv2.waitKey(0)
 
@@ -142,7 +142,7 @@ class board_Recognition:
 		output = transform[20:transform.shape[1]-20, 20:transform.shape[0]-20]
 		histogram = cv2.equalizeHist(cv2.cvtColor(output,cv2.COLOR_BGR2GRAY))
 
-		if  not check:
+		if not check:
 			cv2.imshow("transform",output)
 			cv2.imshow("histogram",histogram)
 			cv2.waitKey(0)
@@ -162,7 +162,7 @@ class board_Recognition:
 		# image = cv2.bilateralFilter(image,5,50,50)
 		edges = cv2.Canny(image, 50, 100, None,3)
 
-		if not check:
+		if check:
 			cv2.imshow("Canny", edges)
 			cv2.waitKey(0)
 			
@@ -176,7 +176,7 @@ class board_Recognition:
 		Finds the lines in the image and classify into vertical or horizontal list
 		'''
 		# Infer lines based on edges (HoughLinesP)
-		lines = cv2.HoughLinesP(edges, 1,  np.pi / 180, 50, np.array([]), 70, 100)		# 50, 50, 60
+		lines = cv2.HoughLinesP(edges, 1,  np.pi/180, 50, np.array([]), 70, 100)		# 50, 50, 60
 		# print(lines.shape)
 
 		horizontal = []
@@ -202,7 +202,7 @@ class board_Recognition:
 				else:
 					vertical.append(newLine)
 
-		if  not check:
+		if not check:
 			cv2.imshow("Lines",output)
 			cv2.waitKey(1)
 			
@@ -349,7 +349,7 @@ class board_Recognition:
 			origin_points[square.position] = origin_point
 			cv2.circle(self.image, (origin_point[0], origin_point[1]), 2, (0,0,255), 2)
 
-		if  not check:
+		if not check:
 			cv2.circle(self.image,((480, 288)),2,(0,255,0),2)
 			cv2.imshow('Piece Detection', self.image)
 			cv2.waitKey(0)
