@@ -14,9 +14,15 @@ class LineClass:
         self.dx = self.x2 - self.x1
         self.dy = self.y2 - self.y1
 
-        if abs(self.dx) > abs(self.dy):
+#         if abs(self.dx) > abs(self.dy):
+#             self.orientation = "horizontal"
+#         else: self.orientation = "vertical"
+
+        if abs(self.dy) < 20:
             self.orientation = "horizontal"
-        else: self.orientation = "vertical"
+        elif abs(self.dx) < 20:
+            self.orientation = "vertical"
+        else: self.orientation = "none"
 
     def draw(self, image, color=(0,0,255), thickness=3):
         cv2.line(image, (self.x1, self.y1), (self.x2, self.y2), color, thickness)
